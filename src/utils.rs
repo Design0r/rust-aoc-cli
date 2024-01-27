@@ -3,6 +3,7 @@ use crate::args::DownloadArgs ;
 use tokio;
 use chrono::prelude::*;
 use scraper::{Html, Selector};
+use anyhow::{Result, anyhow};
 
 
 pub const PY_TEMPLATE: &str = 
@@ -27,50 +28,56 @@ if __name__ == "__main__":
     part_2()
 "#;
 
-pub async fn scaffold_project(args: &DownloadArgs, input: &String) {
-    let base_path: PathBuf;
-        match &args.path {
-        Some(value) => base_path = PathBuf::from(value),
-        None => base_path = env::current_dir().expect("Failed to get the current working directory"),
-    }
+async fn create_dirs(input_path: PathBuf, samples_path: PathBuf) -> Result<()> {
+    let input_path_task = tokio::fs::create_dir_all(input_path);
+    let samples_path_task = tokio::fs::create_dir_all(samples_path);
+
+    let (input_path_res, samples_path_res) = tokio::join!(input_path_task, samples_path_task);
+
+    // Handle the results, returning an error if any operation failed.
+    input_path_res.and_then(|_| samples_path_res)?;
+    Ok(())
+}
+
+async fn create_files(input_file: PathBuf, samples_file: PathBuf, input: &String,  py_file: PathBuf, py_file_content: &str) -> Result<()> {
+    let input_file_task = tokio::fs::write(input_file, input);
+    let samples_file_task = tokio::fs::write(samples_file, "");
+    let py_file_task = tokio::fs::write(py_file, py_file_content);
+
+    let (input_file_res, samples_file_res, py_file_res) = tokio::join!(input_file_task, samples_file_task, py_file_task);
+
+    input_file_res
+        .and_then(|_| samples_file_res)
+        .and_then(|_| py_file_res)?;
+    
+    Ok(())
+}
+pub async fn scaffold_project(args: &DownloadArgs, input: &String) -> Result<()> {
+    let base_path = match &args.path {
+        Some(value) => PathBuf::from(value),
+        None => env::current_dir()?
+    };
 
     let input_path = base_path.join("inputs");
     let samples_path = base_path.join("samples");
 
-    let left_pad;
-    match args.day.to_string().len() {
-        1 => left_pad = String::from("0"),
-        2 => left_pad = String::from(""),
-        _ => left_pad = String::from("")
-    }
+    let left_pad = match args.day.to_string().len() {
+        1 => String::from("0"),
+        _ => String::from("")
+    };
+
     let day_fmt = format!("day_{}{}", left_pad, args.day);
     let intput_file = input_path.join(day_fmt.clone() + ".txt");
     let samples_file = samples_path.join(day_fmt.clone() + ".txt");
     let py_file = base_path.join(day_fmt.clone() + ".py");
     let py_file_content = PY_TEMPLATE.replace("REPLACE_DAY", &day_fmt).replace("REPLACE_DAY_NUM", &left_pad);
 
-    let create_dirs = async {
-        let input_path_task = tokio::fs::create_dir_all(input_path);
-        let samples_path_task = tokio::fs::create_dir_all(samples_path);
+    let (dirs_result, files_result) = tokio::join!(create_dirs(input_path, samples_path), create_files(intput_file, samples_file, input, py_file, &py_file_content));
 
-        let (input_path_res, samples_path_res) = tokio::join!(input_path_task, samples_path_task);
+    dirs_result?;
+    files_result?;
 
-        input_path_res.expect("Error creating input folder structure");
-        samples_path_res.expect("Error creating sample folder structure");
-    };
-
-    let create_files = async {
-        let input_file_task = tokio::fs::write(intput_file, input);
-        let samples_file_task = tokio::fs::write(samples_file, "");
-        let py_file_task = tokio::fs::write(py_file, py_file_content);
-        let (input_file_res, samples_file_res, py_file_res) = tokio::join!(input_file_task, samples_file_task, py_file_task);
-
-        input_file_res.expect("Error creating input file structure");
-        samples_file_res.expect("Error creating sample file structure");
-        py_file_res.expect("Error creating sample file structure");
-    };
-
-    let ((), ()) = tokio::join!(create_dirs, create_files);
+    Ok(())
 }
 
 pub fn get_latest_aoc_year() -> i32 {
@@ -85,11 +92,16 @@ pub fn get_latest_aoc_year() -> i32 {
     return year - 1;
 }
 
-pub fn get_article_content(html: String) -> String {
+pub fn get_article_content(html: String) -> Result<String>{
     let document = Html::parse_document(&html);
-    let article_selector = Selector::parse("article").unwrap();
+    let article_selector = Selector::parse("article").map_err(|e| anyhow!("Failed to parse selector: {}", e))?;
 
-    let content = document.select(&article_selector).last();
+    let article_element = document.select(&article_selector).next();
 
-    return content.unwrap().text().collect::<Vec<_>>().join(" ");
+    if let Some(element) = article_element {
+        let content = element.text().collect::<Vec<_>>().join(" ");
+        return Ok(content);
+    } else {
+        return Err(anyhow!("No article element found"));
+    }
 }

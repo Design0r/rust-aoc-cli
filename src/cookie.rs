@@ -1,26 +1,22 @@
-use std::{env, io};
+use std::env;
 use tokio;
+use anyhow::{Result, anyhow};
 
-pub async fn get_session_cookie() -> String {
-    let exe_path = env::current_exe().expect("Failed to get the current executable path");
-    let file_path = exe_path
-        .parent()
-        .expect("Failed to get parent directory of executable path")
+pub async fn get_session_cookie() -> Result<String> {
+    let exe_path = env::current_exe()?;
+    let file_path = exe_path.parent().ok_or_else(|| anyhow!("Failed to get parent of executable"))?
         .join("cookies.txt");
 
-    let cookie;
 
-    match tokio::fs::read_to_string(file_path).await {
-        Ok(value) => cookie = value,
-        Err(_) => {
-            cookie = String::from("Currently no session cookie set. Try setting a cookie first.")
-        }
+    let cookie = match tokio::fs::read_to_string(file_path).await {
+        Ok(value) => value,
+        Err(_) => String::from("Currently no session cookie set. Try setting a cookie first.")
     };
 
-    return cookie;
+    return Ok(cookie);
 }
 
-pub async fn set_session_cookie(cookie: &String) -> io::Result<()> {
+pub async fn set_session_cookie(cookie: &String) -> Result<()> {
     let mut new_cookie = cookie.clone();
 
     if !new_cookie.starts_with("session=") {
@@ -30,10 +26,7 @@ pub async fn set_session_cookie(cookie: &String) -> io::Result<()> {
     let exe_path = env::current_exe()?;
     let file_path = exe_path
         .parent()
-        .ok_or(io::Error::new(
-            io::ErrorKind::NotFound,
-            "Executable has no parent directory",
-        ))?
+        .ok_or_else(|| anyhow!("Failes to get parent of executable"))?
         .join("cookies.txt");
 
     if !file_path.exists() {
