@@ -1,8 +1,9 @@
 use crate::args::{ DownloadArgs, SubmitArgs};
+use reqwest::StatusCode;
 use reqwest::header::{COOKIE, HeaderMap, HeaderValue};
 use crate::cookie;
 use crate::utils;
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 
 pub async fn request_input(url: &String ) -> Result<String>{
     let cookie = cookie::get_session_cookie().await?;
@@ -12,6 +13,9 @@ pub async fn request_input(url: &String ) -> Result<String>{
 
     let req= client.get(url).headers(headers).build()?;
     let res = client.execute(req).await?;
+    if res.status() != StatusCode::OK{
+        return Err(anyhow!("Have you set a valid session cookie?"));
+    }
 
     return Ok(res.text().await?);
 }
@@ -26,6 +30,10 @@ pub async fn send_solution(url: &String, args: &SubmitArgs) -> Result<()>{
     let data = [("level", args.part), ("answer", args.solution)];
     let req= client.post(url).headers(headers).form(&data).build()?;
     let res = client.execute(req).await?;
+
+    if res.status() != StatusCode::OK{
+        return Err(anyhow!("Have you set a valid session cookie?"));
+    }
 
     let article = utils::get_article_content(res.text().await?)?;
 

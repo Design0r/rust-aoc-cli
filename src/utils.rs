@@ -52,6 +52,7 @@ async fn create_files(input_file: PathBuf, samples_file: PathBuf, input: &String
     
     Ok(())
 }
+
 pub async fn scaffold_project(args: &DownloadArgs, input: &String) -> Result<()> {
     let base_path = match &args.path {
         Some(value) => PathBuf::from(value),
@@ -72,10 +73,8 @@ pub async fn scaffold_project(args: &DownloadArgs, input: &String) -> Result<()>
     let py_file = base_path.join(day_fmt.clone() + ".py");
     let py_file_content = PY_TEMPLATE.replace("REPLACE_DAY", &day_fmt).replace("REPLACE_DAY_NUM", &left_pad);
 
-    let (dirs_result, files_result) = tokio::join!(create_dirs(input_path, samples_path), create_files(intput_file, samples_file, input, py_file, &py_file_content));
-
-    dirs_result?;
-    files_result?;
+    create_dirs(input_path, samples_path).await?;
+    create_files(intput_file, samples_file, input, py_file, &py_file_content).await?;
 
     Ok(())
 }
