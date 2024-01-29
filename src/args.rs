@@ -26,7 +26,7 @@ pub struct DownloadArgs {
     #[arg(short, long)]
     pub day: u32,
     #[arg(short, long, help=format!("Specify the Advent of Code year you want to download from. A number between 2015 and {}", get_latest_aoc_year()))]
-    pub year: u32,
+    pub year: Option<u32>,
 }
 
 #[derive(Args, Debug)]
@@ -54,14 +54,18 @@ pub fn check_args(args: &AocArgs) {
 
     match &args.command {
         Command::Download(a) => {
-            if a.year < 2015 || a.year > aoc_year {
-                println!(
-                    "The Year argument has to be a number between 2015 and {}",
-                    aoc_year
-                );
-                std::process::exit(1);
+            match a.year {
+                Some(year) => {
+                    if year < 2015 || year > aoc_year {
+                        println!(
+                            "The Year argument has to be a number between 2015 and {}",
+                            aoc_year
+                        );
+                        std::process::exit(1);
+                    }
+                }
+                None => {}
             }
-
             if a.day > 25 {
                 println!("The Day argument has to be a number between 1 and 25");
                 std::process::exit(1);

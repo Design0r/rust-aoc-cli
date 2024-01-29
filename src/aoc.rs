@@ -2,7 +2,7 @@ use crate::args::{ DownloadArgs, SubmitArgs};
 use reqwest::StatusCode;
 use reqwest::header::{COOKIE, HeaderMap, HeaderValue};
 use crate::cookie;
-use crate::utils;
+use crate::utils::{self, get_latest_aoc_year};
 use anyhow::{Result, anyhow};
 
 pub async fn request_input(url: &String ) -> Result<String>{
@@ -42,7 +42,12 @@ pub async fn send_solution(url: &String, args: &SubmitArgs) -> Result<()>{
 }
 
 pub fn get_download_url(args: &DownloadArgs) -> String{
-    let url = format!("https://adventofcode.com/{}/day/{}/input", args.year, args.day );
+    let year = match args.year {
+        Some(y) => y.to_string(),
+        None => {get_latest_aoc_year().to_string()}
+    };
+
+    let url = format!("https://adventofcode.com/{}/day/{}/input", year, args.day );
     return url;
 }
 
