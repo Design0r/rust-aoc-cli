@@ -43,6 +43,49 @@ fn main() {
 }
 "#;
 
+pub const GO_TEMPLATE: &str = r#"package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"strings"
+	"time"
+)
+
+func parse(path string) *[]string {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatalf("Error reading file %v", err)
+	}
+	stripped := strings.TrimSpace(string(file))
+	lines := strings.Split(stripped, "\n")
+
+	return &lines
+}
+
+func part1(lines *[]string) {
+	result := 0
+	fmt.Printf("Day REPLACE_DAY_NUM: Part 1: %v\n", result)
+}
+
+func part2(lines *[]string) {
+	result := 0
+	fmt.Printf("Day REPLACE_DAY_NUM: Part 2: %v\n", result)
+}
+
+func main() {
+	startTime := time.Now()
+	lines := parse("inputs/REPLACE_DAY.txt")
+	fmt.Printf("Finished parsing in %v\n", time.Since(startTime))
+	part1(lines)
+	fmt.Printf("Finished Part 1 in %v\n", time.Since(startTime))
+	part2(lines)
+	fmt.Printf("Finished Part 2 in %v\n", time.Since(startTime))
+}
+
+"#;
+
 async fn create_dirs(base_path: &PathBuf) -> Result<()> {
     let input_path = base_path.join("inputs");
     let samples_path = base_path.join("samples");
@@ -63,35 +106,46 @@ async fn create_dirs(base_path: &PathBuf) -> Result<()> {
 
 async fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) -> Result<()> {
     let file_template;
-    let file_suffix = match base_path.join("Cargo.toml").is_file() {
-        true => {
-            file_template = RS_TEMPLATE;
-            ".rs"
-        }
-        false => {
-            file_template = PY_TEMPLATE;
-            ".py"
-        }
-    };
+    let file_suffix;
+    if base_path.join("Cargo.toml").is_file() {
+        file_template = RS_TEMPLATE;
+        file_suffix = ".rs";
+    } else if base_path.join("go.mod").is_file() {
+        file_template = GO_TEMPLATE;
+        file_suffix = ".go";
+    } else {
+        file_template = PY_TEMPLATE;
+        file_suffix = ".py";
+    }
 
     let left_pad = match args.day.to_string().len() {
         1 => String::from("0"),
         _ => String::from(""),
     };
     let day_fmt = format!("day_{}{}", left_pad, args.day);
+    let day_num = format!("{}{}", left_pad, args.day);
 
     let input_file = base_path.join("inputs").join(day_fmt.clone() + ".txt");
     let samples_file = base_path.join("samples").join(day_fmt.clone() + ".txt");
-    let src_file = base_path.join("src").join(day_fmt.clone() + file_suffix);
+    let src_file;
+    if file_suffix == ".go" {
+        let _ = fs::create_dir(base_path.join("src").join(day_num.clone())).await;
+        src_file = base_path
+            .join("src")
+            .join(day_num)
+            .join(day_fmt.clone() + file_suffix);
+    } else {
+        src_file = base_path.join("src").join(day_fmt.clone() + file_suffix);
+    }
     let src_file_content = file_template
         .replace("REPLACE_DAY_NUM", &left_pad)
         .replace("REPLACE_DAY", &day_fmt);
 
     let input_file_task = fs::write(input_file, input);
     let samples_file_task = fs::write(samples_file, "");
-    let py_file_task = fs::write(src_file, src_file_content);
+    let src_file_task = fs::write(src_file, src_file_content);
 
-    let results = tokio::join!(input_file_task, samples_file_task, py_file_task);
+    let results = tokio::join!(input_file_task, samples_file_task, src_file_task);
 
     results.0?;
     results.1?;
