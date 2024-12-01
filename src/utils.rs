@@ -54,7 +54,7 @@ import (
 )
 
 type Data struct {
-    Lines *[]string
+    Lines []string
 }
 
 func parse(path string) *Data {
@@ -65,7 +65,7 @@ func parse(path string) *Data {
 	stripped := strings.TrimSpace(string(file))
 	lines := strings.Split(stripped, "\n")
 
-	return &Data{Lines: &lines}
+	return &Data{Lines: lines}
 }
 
 func part1(data *Data) {
