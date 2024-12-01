@@ -79,13 +79,23 @@ func part2(data *Data) {
 }
 
 func main() {
+	fmt.Printf("------------------------------------\n")
 	startTime := time.Now()
 	lines := parse("inputs/REPLACE_DAY.txt")
-	fmt.Printf("Finished parsing in %v\n", time.Since(startTime))
+	parseTime := time.Since(startTime)
+	part1StartTime := time.Now()
 	part1(lines)
-	fmt.Printf("Finished Part 1 in %v\n", time.Since(startTime))
+	part1Time := time.Since(part1StartTime)
+	part2StartTime := time.Now()
 	part2(lines)
-	fmt.Printf("Finished Part 2 in %v\n", time.Since(startTime))
+	part2Time := time.Since(part2StartTime)
+
+	fmt.Printf("====================================\n")
+	fmt.Printf("Finished Parsing in %v\n", parseTime)
+	fmt.Printf("Finished Part 1 in %v\n", part1Time)
+	fmt.Printf("Finished Part 2 in %v\n", part2Time)
+	fmt.Printf("Total %v\n", time.Since(startTime))
+	fmt.Printf("------------------------------------\n")
 }
 
 "#;
