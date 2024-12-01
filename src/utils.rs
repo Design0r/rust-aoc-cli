@@ -53,7 +53,11 @@ import (
 	"time"
 )
 
-func parse(path string) *[]string {
+type Data struct {
+    Lines *[]string
+}
+
+func parse(path string) *Data {
 	file, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatalf("Error reading file %v", err)
@@ -61,15 +65,15 @@ func parse(path string) *[]string {
 	stripped := strings.TrimSpace(string(file))
 	lines := strings.Split(stripped, "\n")
 
-	return &lines
+	return &Data{Lines: &lines}
 }
 
-func part1(lines *[]string) {
+func part1(data *Data) {
 	result := 0
 	fmt.Printf("Day REPLACE_DAY_NUM: Part 1: %v\n", result)
 }
 
-func part2(lines *[]string) {
+func part2(data *Data) {
 	result := 0
 	fmt.Printf("Day REPLACE_DAY_NUM: Part 2: %v\n", result)
 }
