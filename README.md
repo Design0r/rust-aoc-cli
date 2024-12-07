@@ -13,7 +13,7 @@ A Rust based Command Line Utility to download puzzles and input data and submit 
 
 ## Installation
 
-This command compiles and installs the "aoc" cli in the .cargo/bin directory
+This command compiles and installs the "aoc" cli in the ~/.cargo/bin directory
 
 ```shell
 cargo install --path .
