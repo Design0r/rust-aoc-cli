@@ -146,13 +146,13 @@ async fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) 
         let _ = fs::create_dir(base_path.join("src").join(day_num.clone())).await;
         src_file = base_path
             .join("src")
-            .join(day_num)
+            .join(&day_num)
             .join(day_fmt.clone() + file_suffix);
     } else {
         src_file = base_path.join("src").join(day_fmt.clone() + file_suffix);
     }
     let src_file_content = file_template
-        .replace("REPLACE_DAY_NUM", &left_pad)
+        .replace("REPLACE_DAY_NUM", &day_num)
         .replace("REPLACE_DAY", &day_fmt);
 
     let input_file_task = fs::write(input_file, input);
