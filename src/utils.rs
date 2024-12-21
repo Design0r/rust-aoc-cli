@@ -9,7 +9,7 @@ pub const PY_TEMPLATE: &str = r#"from pathlib import Path
 from typing import NamedTuple
 
 from utils import benchmark
-from collections import NamedTuple
+
 
 class Data(NamedTuple):
     lines: list[str]
@@ -18,8 +18,8 @@ class Data(NamedTuple):
 @benchmark
 def parse() -> Data:
     with open(Path(__file__).parent.parent / "inputs/REPLACE_DAY.txt") as f:
-        file = f.read().strip()
-    return file
+        file = f.read().strip().splitlines()
+    return Data(file)
 
 
 @benchmark
