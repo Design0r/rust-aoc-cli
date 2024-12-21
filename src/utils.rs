@@ -6,24 +6,38 @@ use std::{env, path::PathBuf};
 use tokio::fs;
 
 pub const PY_TEMPLATE: &str = r#"from pathlib import Path
+from typing import NamedTuple
 
-with open(Path(__file__).parent.parent / "inputs/REPLACE_DAY.txt") as f:
-    file = f.read().strip()
+from utils import benchmark
+from collections import NamedTuple
+
+class Data(NamedTuple):
+    lines: list[str]
 
 
-def part_1() -> None:
-    result = None
+@benchmark
+def parse() -> Data:
+    with open(Path(__file__).parent.parent / "inputs/REPLACE_DAY.txt") as f:
+        file = f.read().strip()
+    return file
+
+
+@benchmark
+def part_1(data: Data) -> None:
+    result = 0
     print(f"Day REPLACE_DAY_NUM, Part 1: {result}")
 
 
-def part_2() -> None:
-    result = None
+@benchmark
+def part_2(data: Data) -> None:
+    result = 0
     print(f"Day REPLACE_DAY_NUM, Part 2: {result}")
 
 
 if __name__ == "__main__":
-    part_1()
-    part_2()
+    data = parse()
+    part_1(data)
+    part_2(data)
 "#;
 
 pub const RS_TEMPLATE: &str = r#"use std::fs;
@@ -48,9 +62,9 @@ pub const GO_TEMPLATE: &str = r#"package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"strings"
-	"time"
+    "os"
+    "strings"
+    "time"
 )
 
 type Data struct {
