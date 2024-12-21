@@ -32,7 +32,7 @@ pub struct DownloadArgs {
 #[derive(Args, Debug)]
 pub struct SubmitArgs {
     /// Your Advent of Code Solution. Expects a number
-    pub solution: u32,
+    pub solution: String,
     #[arg(short, long)]
     /// Specify the Advent of Code Day you want to submit. A number between 1 and 25
     pub day: u32,

@@ -26,7 +26,10 @@ pub async fn send_solution(url: &String, args: &SubmitArgs) -> Result<()> {
     let mut headers = HeaderMap::new();
     headers.insert(COOKIE, HeaderValue::from_str(&cookie)?);
 
-    let data = [("level", args.part), ("answer", args.solution)];
+    let data = [
+        ("level", args.part.to_string()),
+        ("answer", args.solution.clone()),
+    ];
     let req = client.post(url).headers(headers).form(&data).build()?;
     let res = client.execute(req).await?;
 
