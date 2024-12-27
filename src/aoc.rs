@@ -5,24 +5,24 @@ use anyhow::{anyhow, Result};
 use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
 use reqwest::StatusCode;
 
-pub async fn request_input(url: &String) -> Result<String> {
-    let cookie = cookie::get_session_cookie().await?;
-    let client = reqwest::Client::new();
+pub fn request_input(url: &String) -> Result<String> {
+    let cookie = cookie::get_session_cookie()?;
+    let client = reqwest::blocking::Client::new();
     let mut headers = HeaderMap::new();
     headers.insert(COOKIE, HeaderValue::from_str(&cookie)?);
 
     let req = client.get(url).headers(headers).build()?;
-    let res = client.execute(req).await?;
+    let res = client.execute(req)?;
     if res.status() != StatusCode::OK {
         return Err(anyhow!("Have you set a valid session cookie?"));
     }
 
-    return Ok(res.text().await?);
+    return Ok(res.text()?);
 }
 
-pub async fn send_solution(url: &String, args: &SubmitArgs) -> Result<()> {
-    let cookie = cookie::get_session_cookie().await?;
-    let client = reqwest::Client::new();
+pub fn send_solution(url: &String, args: &SubmitArgs) -> Result<()> {
+    let cookie = cookie::get_session_cookie()?;
+    let client = reqwest::blocking::Client::new();
     let mut headers = HeaderMap::new();
     headers.insert(COOKIE, HeaderValue::from_str(&cookie)?);
 
@@ -31,13 +31,13 @@ pub async fn send_solution(url: &String, args: &SubmitArgs) -> Result<()> {
         ("answer", args.solution.clone()),
     ];
     let req = client.post(url).headers(headers).form(&data).build()?;
-    let res = client.execute(req).await?;
+    let res = client.execute(req)?;
 
     if res.status() != StatusCode::OK {
         return Err(anyhow!("Have you set a valid session cookie?"));
     }
 
-    let article = utils::get_article_content(res.text().await?)?;
+    let article = utils::get_article_content(res.text()?)?;
 
     println!("{}", article);
     return Ok(());

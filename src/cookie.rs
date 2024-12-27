@@ -1,15 +1,14 @@
 use anyhow::{anyhow, Result};
-use std::env;
-use tokio;
+use std::{env, fs};
 
-pub async fn get_session_cookie() -> Result<String> {
+pub fn get_session_cookie() -> Result<String> {
     let exe_path = env::current_exe()?;
     let file_path = exe_path
         .parent()
         .ok_or_else(|| anyhow!("Failed to get parent of executable"))?
         .join("cookies.txt");
 
-    let cookie = match tokio::fs::read_to_string(file_path).await {
+    let cookie = match fs::read_to_string(file_path) {
         Ok(value) => value,
         Err(_) => String::from("Currently no session cookie set. Try setting a cookie first."),
     };
@@ -17,7 +16,7 @@ pub async fn get_session_cookie() -> Result<String> {
     return Ok(cookie);
 }
 
-pub async fn set_session_cookie(cookie: &String) -> Result<()> {
+pub fn set_session_cookie(cookie: &String) -> Result<()> {
     let mut new_cookie = cookie.clone();
 
     if !new_cookie.starts_with("session=") {
@@ -31,10 +30,10 @@ pub async fn set_session_cookie(cookie: &String) -> Result<()> {
         .join("cookies.txt");
 
     if !file_path.exists() {
-        tokio::fs::write(file_path.clone(), "").await?;
+        fs::write(file_path.clone(), "")?;
     }
 
-    tokio::fs::write(file_path, new_cookie).await?;
+    fs::write(file_path, new_cookie)?;
 
     return Ok(());
 }

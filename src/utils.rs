@@ -2,8 +2,7 @@ use crate::args::DownloadArgs;
 use anyhow::{anyhow, Result};
 use chrono::prelude::*;
 use scraper::{Html, Selector};
-use std::{env, path::PathBuf};
-use tokio::fs;
+use std::{env, fs, path::PathBuf};
 
 pub const PY_TEMPLATE: &str = r#"from pathlib import Path
 from typing import NamedTuple
@@ -114,25 +113,19 @@ func main() {
 
 "#;
 
-async fn create_dirs(base_path: &PathBuf) -> Result<()> {
+fn create_dirs(base_path: &PathBuf) -> Result<()> {
     let input_path = base_path.join("inputs");
     let samples_path = base_path.join("samples");
     let src_path = base_path.join("src");
 
-    let input_path_task = fs::create_dir_all(input_path);
-    let samples_path_task = fs::create_dir_all(samples_path);
-    let src_path_task = fs::create_dir_all(src_path);
-
-    let results = tokio::join!(src_path_task, input_path_task, samples_path_task);
-
-    results.0?;
-    results.1?;
-    results.2?;
+    fs::create_dir_all(input_path)?;
+    fs::create_dir_all(samples_path)?;
+    fs::create_dir_all(src_path)?;
 
     Ok(())
 }
 
-async fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) -> Result<()> {
+fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) -> Result<()> {
     let file_template;
     let file_suffix;
     if base_path.join("Cargo.toml").is_file() {
@@ -157,7 +150,7 @@ async fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) 
     let samples_file = base_path.join("samples").join(day_fmt.clone() + ".txt");
     let src_file;
     if file_suffix == ".go" {
-        let _ = fs::create_dir(base_path.join("src").join(day_num.clone())).await;
+        let _ = fs::create_dir(base_path.join("src").join(day_num.clone()));
         src_file = base_path
             .join("src")
             .join(&day_num)
@@ -169,27 +162,21 @@ async fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) 
         .replace("REPLACE_DAY_NUM", &day_num)
         .replace("REPLACE_DAY", &day_fmt);
 
-    let input_file_task = fs::write(input_file, input);
-    let samples_file_task = fs::write(samples_file, "");
-    let src_file_task = fs::write(src_file, src_file_content);
-
-    let results = tokio::join!(input_file_task, samples_file_task, src_file_task);
-
-    results.0?;
-    results.1?;
-    results.2?;
+    fs::write(input_file, input)?;
+    fs::write(samples_file, "")?;
+    fs::write(src_file, src_file_content)?;
 
     Ok(())
 }
 
-pub async fn scaffold_project(args: &DownloadArgs, input: &String) -> Result<()> {
+pub fn scaffold_project(args: &DownloadArgs, input: &String) -> Result<()> {
     let base_path = match &args.path {
         Some(value) => PathBuf::from(value),
         None => env::current_dir()?,
     };
 
-    create_dirs(&base_path).await?;
-    create_files(&base_path, input, args).await?;
+    create_dirs(&base_path)?;
+    create_files(&base_path, input, args)?;
 
     Ok(())
 }
