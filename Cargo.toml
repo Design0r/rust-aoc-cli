@@ -7,8 +7,8 @@ edition = "2021"
 
 
 [dependencies]
-anyhow = "1.0.93"
-chrono = "0.4.38"
-clap = { version = "4.5.21", features = ["derive"] }
-reqwest = { version = "0.12.9", features = ["blocking"] }
+anyhow = "1.0.95"
+chrono = "0.4.39"
+clap = { version = "4.5.23", features = ["derive"] }
+reqwest = { version = "0.12.10", features = ["blocking"] }
 scraper = "0.21.0"
