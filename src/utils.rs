@@ -52,7 +52,7 @@ fn part_2(file: &String) {
 }
 
 fn main() {
-    let file = fs::read_to_string("../inputs/REPLACE_DAY.txt").expect("error reading file"); 
+    let file = fs::read_to_string("inputs/REPLACE_DAY.txt").expect("error reading file"); 
 }
 "#;
 
