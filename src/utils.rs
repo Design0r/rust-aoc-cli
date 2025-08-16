@@ -122,6 +122,8 @@ fn create_dirs(base_path: &PathBuf) -> Result<()> {
     fs::create_dir_all(samples_path)?;
     fs::create_dir_all(src_path)?;
 
+    println!("created folders");
+
     Ok(())
 }
 
@@ -166,6 +168,8 @@ fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) -> Res
     fs::write(samples_file, "")?;
     fs::write(src_file, src_file_content)?;
 
+    println!("created template files for {}", file_suffix);
+
     Ok(())
 }
 
@@ -177,6 +181,8 @@ pub fn scaffold_project(args: &DownloadArgs, input: &String) -> Result<()> {
 
     create_dirs(&base_path)?;
     create_files(&base_path, input, args)?;
+
+    println!("completed scaffolding");
 
     Ok(())
 }

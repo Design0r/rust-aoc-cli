@@ -8,12 +8,9 @@ pub fn get_session_cookie() -> Result<String> {
         .ok_or_else(|| anyhow!("Failed to get parent of executable"))?
         .join("cookies.txt");
 
-    let cookie = match fs::read_to_string(file_path) {
-        Ok(value) => value,
-        Err(_) => String::from("Currently no session cookie set. Try setting a cookie first."),
-    };
+    let cookie = fs::read_to_string(file_path);
 
-    return Ok(cookie);
+    return Ok(cookie?);
 }
 
 pub fn set_session_cookie(cookie: &String) -> Result<()> {

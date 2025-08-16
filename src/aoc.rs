@@ -6,7 +6,8 @@ use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
 use reqwest::StatusCode;
 
 pub fn request_input(url: &String) -> Result<String> {
-    let cookie = cookie::get_session_cookie()?;
+    let cookie =
+        cookie::get_session_cookie().expect("Failed to get session cookie, try setting one first.");
     let client = reqwest::blocking::Client::new();
     let mut headers = HeaderMap::new();
     headers.insert(COOKIE, HeaderValue::from_str(&cookie)?);
@@ -14,7 +15,8 @@ pub fn request_input(url: &String) -> Result<String> {
     let req = client.get(url).headers(headers).build()?;
     let res = client.execute(req)?;
     if res.status() != StatusCode::OK {
-        return Err(anyhow!("Have you set a valid session cookie?"));
+        println!("Unsuccessful download request, have you set a valid session cookie?");
+        std::process::exit(1);
     }
 
     return Ok(res.text()?);

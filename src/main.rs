@@ -35,11 +35,13 @@ fn main() -> Result<()> {
     let args = AocArgs::parse();
     args::check_args(&args);
 
-    let _ = match args.command {
+    let res = match args.command {
         Command::Download(args) => exec_download(&args),
         Command::Submit(args) => exec_submit(&args),
         Command::Cookie { cookie } => exec_cookie(&cookie),
     };
+
+    res.unwrap();
 
     return Ok(());
 }
