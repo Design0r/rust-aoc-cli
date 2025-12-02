@@ -1,5 +1,5 @@
 use crate::utils::get_latest_aoc_year;
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
@@ -18,6 +18,15 @@ pub enum Command {
     Cookie { cookie: Option<String> },
 }
 
+#[derive(ValueEnum, Clone, Debug)]
+pub enum Language {
+    Rust = 0,
+    Rs = 1,
+    Python = 2,
+    Py = 3,
+    Go = 4,
+}
+
 #[derive(Args, Debug)]
 pub struct DownloadArgs {
     /// Optional field for the project path. If empty creates project folders in current working directory
@@ -27,6 +36,10 @@ pub struct DownloadArgs {
     pub day: u32,
     #[arg(short, long, help=format!("Specify the Advent of Code year you want to download from. A number between 2015 and {}", get_latest_aoc_year()))]
     pub year: Option<u32>,
+
+    /// Specify the language for the template generation.
+    #[arg(short, long)]
+    pub language: Option<Language>,
 }
 
 #[derive(Args, Debug)]

@@ -1,5 +1,5 @@
-use crate::args::DownloadArgs;
-use anyhow::{anyhow, Result};
+use crate::args::{DownloadArgs, Language};
+use anyhow::{Result, anyhow};
 use chrono::prelude::*;
 use scraper::{Html, Selector};
 use std::{env, fs, path::PathBuf};
@@ -41,20 +41,21 @@ if __name__ == "__main__":
 
 pub const RS_TEMPLATE: &str = r#"use std::fs;
 
-fn part_1(file: &String) {
-    let result = 0;
+fn part_1(file: &Vec<&str>) {
+    let mut result = 0;
     println!("Day REPLACE_DAY_NUM, Part 1: {}", result);
 }
 
-fn part_2(file: &String) {
-    let result = 0;
+fn part_2(file: &Vec<&str>) {
+    let mut result = 0;
     println!("Day REPLACE_DAY_NUM, Part 2: {}", result);
 }
 
 fn main() {
     let file = fs::read_to_string("inputs/REPLACE_DAY.txt").expect("error reading file"); 
-    part_1(&file);
-    part_2(&file);
+    let lines: Vec<&str> = file.lines().collect();
+    part_1(&lines);
+    part_2(&lines);
 }
 "#;
 
@@ -132,15 +133,34 @@ fn create_dirs(base_path: &PathBuf) -> Result<()> {
 fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) -> Result<()> {
     let file_template;
     let file_suffix;
-    if base_path.join("Cargo.toml").is_file() {
-        file_template = RS_TEMPLATE;
-        file_suffix = ".rs";
-    } else if base_path.join("go.mod").is_file() {
-        file_template = GO_TEMPLATE;
-        file_suffix = ".go";
-    } else {
-        file_template = PY_TEMPLATE;
-        file_suffix = ".py";
+
+    match &args.language {
+        Some(lang) => match lang {
+            Language::Rust | Language::Rs => {
+                file_template = RS_TEMPLATE;
+                file_suffix = ".rs";
+            }
+            Language::Go => {
+                file_template = GO_TEMPLATE;
+                file_suffix = ".go";
+            }
+            Language::Python | Language::Py => {
+                file_template = PY_TEMPLATE;
+                file_suffix = ".py";
+            }
+        },
+        None => {
+            if base_path.join("Cargo.toml").is_file() {
+                file_template = RS_TEMPLATE;
+                file_suffix = ".rs";
+            } else if base_path.join("go.mod").is_file() {
+                file_template = GO_TEMPLATE;
+                file_suffix = ".go";
+            } else {
+                file_template = PY_TEMPLATE;
+                file_suffix = ".py";
+            }
+        }
     }
 
     let left_pad = match args.day.to_string().len() {
@@ -184,7 +204,7 @@ pub fn scaffold_project(args: &DownloadArgs, input: &String) -> Result<()> {
     create_dirs(&base_path)?;
     create_files(&base_path, input, args)?;
 
-    println!("completed scaffolding");
+    println!("completed template scaffolding");
 
     Ok(())
 }
