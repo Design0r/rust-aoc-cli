@@ -40,8 +40,6 @@ fn main() -> Result<()> {
         Command::Submit(args) => exec_submit(&args),
         Command::Cookie { cookie } => exec_cookie(&cookie),
     };
-
     res.unwrap();
-
     return Ok(());
 }
