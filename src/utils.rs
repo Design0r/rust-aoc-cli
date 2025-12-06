@@ -2,7 +2,7 @@ use crate::args::{DownloadArgs, Language};
 use anyhow::{Result, anyhow};
 use chrono::prelude::*;
 use scraper::{Html, Selector};
-use std::{env, fs, path::PathBuf};
+use std::{env, fs, io::Write, path::PathBuf};
 
 pub const PY_TEMPLATE: &str = r#"from pathlib import Path
 from typing import NamedTuple
@@ -58,6 +58,11 @@ fn main() {
     part_2(&lines);
 }
 "#;
+
+pub const CARGO_TEMPLATE: &str = r#"
+[[bin]]
+name = "REPLACE_DAY"
+path = "src/REPLACE_DAY.rs""#;
 
 pub const GO_TEMPLATE: &str = r#"package main
 
@@ -172,15 +177,24 @@ fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) -> Res
 
     let input_file = base_path.join("inputs").join(day_fmt.clone() + ".txt");
     let samples_file = base_path.join("samples").join(day_fmt.clone() + ".txt");
-    let src_file;
+    let mut src_file = base_path.join("src").join(day_fmt.clone() + file_suffix);
     if file_suffix == ".go" {
         let _ = fs::create_dir(base_path.join("src").join(day_num.clone()));
         src_file = base_path
             .join("src")
             .join(&day_num)
             .join(day_fmt.clone() + file_suffix);
-    } else {
-        src_file = base_path.join("src").join(day_fmt.clone() + file_suffix);
+    } else if file_suffix == ".rs" {
+        let mut cargo = fs::OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open("Cargo.toml")
+            .expect("Cargo.toml does nost exist, use cargo init to create one");
+
+        let cargo_templ = CARGO_TEMPLATE.replace("REPLACE_DAY", &day_fmt);
+        if let Err(e) = cargo.write_fmt(format_args!("{cargo_templ}")) {
+            eprintln!("Failed to write to Cargo.toml: {e}");
+        };
     }
     let src_file_content = file_template
         .replace("REPLACE_DAY_NUM", &day_num)
