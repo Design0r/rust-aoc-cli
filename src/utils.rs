@@ -39,7 +39,7 @@ if __name__ == "__main__":
     part_2(data)
 "#;
 
-pub const RS_TEMPLATE: &str = r#"use std::fs;
+pub const RS_TEMPLATE: &str = r#"use std::{fs, time::Instant};
 
 fn part_1(file: &Vec<&str>) {
     let mut result = 0;
@@ -52,10 +52,14 @@ fn part_2(file: &Vec<&str>) {
 }
 
 fn main() {
+    let start = Instant::now();
+
     let file = fs::read_to_string("inputs/REPLACE_DAY.txt").expect("error reading file"); 
     let lines: Vec<&str> = file.lines().collect();
     part_1(&lines);
     part_2(&lines);
+
+    println!("Finished in {}µs", start.elapsed().as_micros());
 }
 "#;
 
