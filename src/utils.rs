@@ -64,6 +64,7 @@ fn main() {
 "#;
 
 pub const CARGO_TEMPLATE: &str = r#"
+
 [[bin]]
 name = "REPLACE_DAY"
 path = "src/REPLACE_DAY.rs""#;
