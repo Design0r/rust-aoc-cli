@@ -5,12 +5,12 @@ use scraper::{Html, Selector};
 use std::{env, fs, io::Write, path::PathBuf};
 
 pub const PY_TEMPLATE: &str = r#"from pathlib import Path
-from typing import NamedTuple
+from dataclasses import dataclass
 
 from utils import benchmark
 
-
-class Data(NamedTuple):
+@dataclass(slots=True)
+class Data:
     lines: list[str]
 
 
