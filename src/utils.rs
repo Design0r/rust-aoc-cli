@@ -198,16 +198,24 @@ fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) -> Res
 
         let cargo_templ = CARGO_TEMPLATE.replace("REPLACE_DAY", &day_fmt);
         if let Err(e) = cargo.write_fmt(format_args!("{cargo_templ}")) {
-            eprintln!("Failed to write to Cargo.toml: {e}");
+            eprintln!("failed to write to Cargo.toml: {e}");
         };
     }
     let src_file_content = file_template
         .replace("REPLACE_DAY_NUM", &day_num)
         .replace("REPLACE_DAY", &day_fmt);
 
-    fs::write(input_file, input)?;
-    fs::write(samples_file, "")?;
-    fs::write(src_file, src_file_content)?;
+    fs::write(&input_file, input)?;
+    match fs::exists(&samples_file) {
+        Ok(true) => println!("{:?} already exists, skipping creation", samples_file),
+        Ok(false) => fs::write(samples_file, "")?,
+        Err(e) => eprintln!("failed to verify if file exists: {}", e),
+    }
+    match fs::exists(&src_file) {
+        Ok(true) => println!("{:?} already exists, skipping creation", src_file),
+        Ok(false) => fs::write(src_file, src_file_content)?,
+        Err(e) => eprintln!("failed to verify if file exists: {}", e),
+    };
 
     println!("created template files for {}", file_suffix);
 

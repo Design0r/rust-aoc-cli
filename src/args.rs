@@ -67,39 +67,50 @@ pub fn check_args(args: &AocArgs) {
 
     match &args.command {
         Command::Download(a) => {
-            match a.year {
-                Some(year) => {
-                    if year < 2015 || year > aoc_year {
-                        println!(
-                            "The Year argument has to be a number between 2015 and {}",
-                            aoc_year
-                        );
-                        std::process::exit(1);
-                    }
-                }
-                None => {}
+            let year = match a.year {
+                Some(year) => year,
+                None => aoc_year,
+            };
+
+            if year < 2015 || year > aoc_year {
+                println!(
+                    "the year argument has to be a number between 2015 and {}",
+                    aoc_year
+                );
+                std::process::exit(1);
             }
-            if a.day > 25 {
-                println!("The Day argument has to be a number between 1 and 25");
+
+            if year >= 2025 && (a.day > 12 || a.day < 1) {
+                println!(
+                    "since 2025 there are only 12 puzzles in the calendar, so the day argument as to be a number between 1 and 12"
+                );
+                std::process::exit(1);
+            } else if a.day > 25 {
+                println!("the day argument has to be a number between 1 and 25");
                 std::process::exit(1);
             }
         }
         Command::Submit(a) => {
             if a.year < 2015 || a.year > aoc_year {
                 println!(
-                    "The Year argument has to be a number between 2015 and {}",
+                    "the year argument has to be a number between 2015 and {}",
                     aoc_year
                 );
                 std::process::exit(1);
             }
 
-            if a.day > 25 {
-                println!("The Day argument has to be a number between 1 and 25");
+            if a.year >= 2025 && a.day > 12 {
+                println!(
+                    "since 2025 there are only 12 puzzles in the calendar, so the day argument as to be a number between 1 and 12"
+                );
+                std::process::exit(1);
+            } else if a.day > 25 {
+                println!("the day argument has to be a number between 1 and 25");
                 std::process::exit(1);
             }
 
-            if a.part < 1 || a.part > 2 {
-                println!("The Part argument has to be a number between 1 and 2");
+            if a.part != 1 || a.part != 2 {
+                println!("the part argument has to be a number between 1 and 2");
                 std::process::exit(1);
             }
         }
