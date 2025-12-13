@@ -2,7 +2,12 @@ use crate::args::{DownloadArgs, Language};
 use anyhow::{Result, anyhow};
 use chrono::prelude::*;
 use scraper::{Html, Selector};
-use std::{env, fs, io::Write, path::PathBuf};
+use std::{
+    env,
+    fs::{self, exists},
+    io::Write,
+    path::PathBuf,
+};
 
 pub const PY_TEMPLATE: &str = r#"from pathlib import Path
 from dataclasses import dataclass
@@ -189,7 +194,7 @@ fn create_files(base_path: &PathBuf, input: &String, args: &DownloadArgs) -> Res
             .join("src")
             .join(&day_num)
             .join(day_fmt.clone() + file_suffix);
-    } else if file_suffix == ".rs" {
+    } else if file_suffix == ".rs" && !fs::exists(&src_file).unwrap() {
         let mut cargo = fs::OpenOptions::new()
             .write(true)
             .append(true)
@@ -231,7 +236,7 @@ pub fn scaffold_project(args: &DownloadArgs, input: &String) -> Result<()> {
     create_dirs(&base_path)?;
     create_files(&base_path, input, args)?;
 
-    println!("completed template scaffolding");
+    println!("completed template scaffolding for day {}", args.day);
 
     Ok(())
 }
